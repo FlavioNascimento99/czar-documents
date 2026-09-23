@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "czar-documents",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-18",
+  "vars": {
+    "APP_HOST": "czar-documents.contato-nascimento-dev.workers.dev"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "containers": [
+    {
+      "class_name": "CzarDocContainer",
+      "image": "./Dockerfile",
+      "max_instances": 1,
+      "name": "czar-doc-app",
+      "instance_type": "standard-1"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "CzarDocContainer",
+        "name": "CZAR_DOC_CONTAINER"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "new_sqlite_classes": ["CzarDocContainer"],
+      "tag": "v1"
+    }
+  ]
+}

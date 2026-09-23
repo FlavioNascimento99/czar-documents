@@ -1,0 +1,18 @@
+# deps
+node_modules/
+
+# builds
+client/dist/
+server/api
+
+# wrangler
+.wrangler/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# os / editor
+.DS_Store
+*.log
