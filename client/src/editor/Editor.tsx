@@ -6,10 +6,12 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../lib/api';
+import { Button, Spinner } from '../ui';
+import { SaveStatus, type SaveState } from './SaveStatus';
 
 // Debounced autosave: no request per keystroke. Shows Saving... / Saved.
 export default function Editor({ id, initial }: { id: string; initial: any }) {
-  const [status, setStatus] = useState('Saved');
+  const [status, setStatus] = useState<SaveState>('saved');
   const [uploading, setUploading] = useState(false);
   const timer = useRef<any>(null);
   const editor = useEditor({
@@ -21,8 +23,9 @@ export default function Editor({ id, initial }: { id: string; initial: any }) {
       Image,
     ],
     content: initial ?? { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }] },
+    editorProps: { attributes: { 'aria-label': 'Document content' } },
     onUpdate: ({ editor }) => {
-      setStatus('Saving...');
+      setStatus('saving');
       clearTimeout(timer.current);
       timer.current = setTimeout(async () => {
         const json = editor.getJSON();
@@ -32,8 +35,8 @@ export default function Editor({ id, initial }: { id: string; initial: any }) {
             method: 'PATCH',
             body: JSON.stringify({ content: json, content_text: text })
           });
-          setStatus('Saved');
-        } catch { setStatus('Save failed'); }
+          setStatus('saved');
+        } catch { setStatus('failed'); }
       }, 1200);
     }
   });
@@ -74,7 +77,7 @@ export default function Editor({ id, initial }: { id: string; initial: any }) {
         if (!putRes.ok) throw new Error('Upload failed');
         // 3. Insert image into editor using the public URL
         editor.chain().focus().setImage({ src: publicUrl }).run();
-        setStatus('Saved');
+        setStatus('saved');
       } catch (e) {
         console.error(e);
         alert('Falha no upload da imagem');
@@ -87,21 +90,34 @@ export default function Editor({ id, initial }: { id: string; initial: any }) {
 
   if (!editor) return null;
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        <div className="text-xs text-neutral-500">{status}</div>
-        {uploading && <span className="text-xs text-blue-600">Enviando imagem…</span>}
-        <button
+    <div className="rounded-lg border border-border bg-surface shadow-card">
+      <div
+        role="toolbar"
+        aria-label="Editor tools"
+        className="sticky top-nav z-dropdown flex min-h-11 flex-wrap items-center gap-2 rounded-t-lg border-b border-border bg-surface-secondary px-2 py-1.5 sm:px-3"
+      >
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
+          icon="image"
           onClick={handleImageUpload}
           disabled={uploading}
-          className="text-sm px-2 py-1 border rounded hover:bg-neutral-100 disabled:opacity-50"
           title="Inserir imagem"
         >
-          🖼️ Imagem
-        </button>
+          Imagem
+        </Button>
+        {uploading && (
+          <span className="inline-flex items-center gap-1.5 text-small text-info" role="status">
+            <Spinner size={14} />
+            Enviando imagem…
+          </span>
+        )}
+        <div className="ml-auto pr-1">
+          <SaveStatus status={status} />
+        </div>
       </div>
-      <div className="prose-editor bg-white rounded border border-neutral-200 p-6">
+      <div className="prose-editor px-5 py-6 sm:px-10 sm:py-10">
         <EditorContent editor={editor} />
       </div>
     </div>

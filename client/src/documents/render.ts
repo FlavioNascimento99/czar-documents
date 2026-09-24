@@ -10,8 +10,12 @@ export function renderNode(n: any): string {
     case 'bulletList': return `<ul>${kids}</ul>`;
     case 'orderedList': return `<ol>${kids}</ol>`;
     case 'listItem': return `<li>${kids}</li>`;
-    case 'taskList': return `<ul>${kids}</ul>`;
-    case 'taskItem': return `<li>${n.attrs?.checked ? '☑ ' : '☐ '}${kids}</li>`;
+    case 'taskList': return `<ul data-type="taskList">${kids}</ul>`;
+    case 'taskItem': {
+      const checked = !!n.attrs?.checked;
+      const box = `<input type="checkbox" disabled${checked ? ' checked' : ''} aria-label="${checked ? 'Completed' : 'Not completed'}"/>`;
+      return `<li data-checked="${checked}"><label>${box}</label><div>${kids}</div></li>`;
+    }
     case 'blockquote': return `<blockquote>${kids}</blockquote>`;
     case 'codeBlock': return `<pre>${esc(kids)}</pre>`;
     case 'horizontalRule': return `<hr/>`;
