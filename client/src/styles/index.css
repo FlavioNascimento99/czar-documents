@@ -2,13 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
-body { @apply bg-neutral-50 text-neutral-900 antialiased; }
-.prose-editor .tiptap { @apply min-h-[50vh] outline-none leading-7 text-[17px]; }
-.prose-view h1 { @apply text-3xl font-semibold mt-2 mb-4; }
-.prose-view h2 { @apply text-2xl font-semibold mt-6 mb-2; }
-.prose-view p { @apply my-3; }
-.prose-view ul { @apply list-disc ml-6 my-2; }
-.prose-view ol { @apply list-decimal ml-6 my-2; }
-.prose-view blockquote { @apply border-l-2 border-neutral-300 pl-4 italic my-3; }
-.prose-view code { @apply bg-neutral-100 px-1 rounded text-sm; }
-.prose-view pre { @apply bg-neutral-900 text-neutral-100 p-4 rounded my-3 overflow-auto; }
+/* Design tokens: OKLCH channels, consumed by tailwind.config.js as oklch(var(--x) / alpha). */
+@layer base {
+  :root {
+    --bg: 0.985 0.003 275;
+    --surface: 1 0 0;
+    --surface-secondary: 0.967 0.005 275;
+    --border: 0.918 0.008 275;
+    --border-strong: 0.86 0.01 275;
+    --fg: 0.22 0.02 275;
+    --fg-secondary: 0.47 0.02 275;
+    --fg-tertiary: 0.56 0.015 275;
+    --primary: 0.51 0.23 277;
+    --primary-hover: 0.45 0.22 277;
+    --primary-subtle: 0.955 0.03 277;
+    --primary-subtle-fg: 0.42 0.2 277;
+    --success: 0.5 0.13 150;
+    --success-subtle: 0.962 0.04 150;
+    --warning: 0.54 0.13 65;
+    --warning-subtle: 0.965 0.05 85;
+    --danger: 0.53 0.2 25;
+    --danger-hover: 0.47 0.19 25;
+    --danger-subtle: 0.965 0.02 25;
+    --info: 0.5 0.12 240;
+    --info-subtle: 0.962 0.025 240;
+
+    color-scheme: light;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  body {
+    @apply bg-bg font-sans text-body text-fg antialiased;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid oklch(var(--primary));
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: oklch(var(--primary) / 0.16);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Document prose: shared by the read-only renderer (.prose-view) and the TipTap editor. */
+@layer components {
+  .prose-view,
+  .prose-editor .tiptap {
+    @apply max-w-prose text-body-lg text-fg;
+    overflow-wrap: break-word;
+  }
+
+  .prose-editor .tiptap {
+    @apply mx-auto min-h-[50vh] outline-none;
+  }
+
+  :is(.prose-view, .prose-editor .tiptap) > :first-child { margin-top: 0; }
+  :is(.prose-view, .prose-editor .tiptap) > :last-child { margin-bottom: 0; }
+
+  :is(.prose-view, .prose-editor .tiptap) h1 {
+    @apply mb-3 mt-8 text-[1.625rem] font-semibold leading-tight tracking-[-0.015em];
+  }
+  :is(.prose-view, .prose-editor .tiptap) h2 {
+    @apply mb-2 mt-7 text-[1.35rem] font-semibold leading-snug tracking-[-0.01em];
+  }
+  :is(.prose-view, .prose-editor .tiptap) :is(h3, h4, h5, h6) {
+    @apply mb-2 mt-6 text-[1.125rem] font-semibold leading-snug;
+  }
+  :is(.prose-view, .prose-editor .tiptap) p { @apply my-3; }
+  :is(.prose-view, .prose-editor .tiptap) strong { @apply font-semibold; }
+
+  :is(.prose-view, .prose-editor .tiptap) a {
+    @apply text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:decoration-primary;
+  }
+
+  :is(.prose-view, .prose-editor .tiptap) ul { @apply my-3 list-disc pl-6; }
+  :is(.prose-view, .prose-editor .tiptap) ol { @apply my-3 list-decimal pl-6; }
+  :is(.prose-view, .prose-editor .tiptap) li { @apply my-1; }
+  :is(.prose-view, .prose-editor .tiptap) li > p { @apply my-0; }
+  :is(.prose-view, .prose-editor .tiptap) li::marker { @apply text-fg-tertiary; }
+
+  :is(.prose-view, .prose-editor .tiptap) ul[data-type='taskList'] { @apply list-none pl-0; }
+  :is(.prose-view, .prose-editor .tiptap) ul[data-type='taskList'] li { @apply flex items-start gap-2.5; }
+  :is(.prose-view, .prose-editor .tiptap) ul[data-type='taskList'] li > label { @apply flex shrink-0 select-none; }
+  :is(.prose-view, .prose-editor .tiptap) ul[data-type='taskList'] li > div { @apply min-w-0 flex-1; }
+  :is(.prose-view, .prose-editor .tiptap) ul[data-type='taskList'] li > div > p { @apply my-0; }
+  :is(.prose-view, .prose-editor .tiptap) ul[data-type='taskList'] input[type='checkbox'] {
+    @apply mt-[0.4em] h-4 w-4 shrink-0 cursor-pointer accent-primary;
+  }
+  .prose-view ul[data-type='taskList'] input[type='checkbox'] { @apply cursor-default; }
+  :is(.prose-view, .prose-editor .tiptap) li[data-checked='true'] > div { @apply text-fg-secondary line-through decoration-fg-tertiary; }
+
+  :is(.prose-view, .prose-editor .tiptap) blockquote {
+    @apply my-4 rounded-md border border-border bg-surface-secondary px-4 py-3 text-fg-secondary;
+  }
+
+  :is(.prose-view, .prose-editor .tiptap) code {
+    @apply rounded-[5px] border border-border bg-surface-secondary px-[0.3em] py-[0.1em] font-mono text-[0.875em];
+  }
+  :is(.prose-view, .prose-editor .tiptap) pre {
+    @apply my-4 overflow-x-auto rounded-md border border-border bg-surface-secondary p-4 font-mono text-[0.875rem] leading-relaxed;
+  }
+  :is(.prose-view, .prose-editor .tiptap) pre code {
+    @apply border-0 bg-transparent p-0 text-[inherit];
+  }
+
+  :is(.prose-view, .prose-editor .tiptap) hr { @apply my-8 border-0 border-t border-border; }
+
+  :is(.prose-view, .prose-editor .tiptap) img {
+    @apply my-5 h-auto max-w-full rounded-md border border-border;
+  }
+  .prose-editor .tiptap img.ProseMirror-selectednode {
+    outline: 2px solid oklch(var(--primary));
+    outline-offset: 2px;
+  }
+}
